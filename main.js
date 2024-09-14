@@ -154,6 +154,13 @@ function init() {
   });
 
   rest.forEach((i, index) => {
+    offsetLeft + 400 + index * (cardWidth + gap);
+    console.log(
+      "%c seda [ offsetLeft + 400 + index * (cardWidth + gap) ]-158",
+      "font-size:13px; background:pink; color:#bf2c9f;",
+      offsetLeft + 400 + index * (cardWidth + gap),
+      index
+    );
     gsap.set(getCard(i), {
       x: offsetLeft + 400 + index * (cardWidth + gap),
       y: offsetTop,
@@ -180,7 +187,7 @@ function init() {
     ease,
     onComplete: () => {
       setTimeout(() => {
-        loop();
+        // loop();
       }, 500);
     },
   });
