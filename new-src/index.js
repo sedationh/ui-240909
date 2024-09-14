@@ -49,7 +49,7 @@ const data = [
       "Göreme Valley in Cappadocia is a historical marvel set against a unique geological backdrop, where centuries of wind and water have sculpted the landscape into whimsical formations. The valley is also famous for its open-air museums, underground cities, and the enchanting experience of hot air ballooning.",
     image: "https://assets.codepen.io/3685267/timed-cards-6.jpg",
   },
-];
+].map((i, index) => ({ ...i, index }));
 
 const _ = (id) => document.getElementById(id);
 
@@ -68,6 +68,7 @@ async function loop() {
   await animate(".indicator", 2, { x: 0 });
   await animate(".indicator", 0.8, { x: window.innerWidth, delay: 0.3 });
   gsap.set(".indicator", { x: -window.innerWidth });
+  await step();
   loop();
 }
 
@@ -76,17 +77,65 @@ function getCard(index) {
 }
 const { innerHeight: height, innerWidth: width } = window;
 
-let offsetTop = 200;
-let offsetLeft = 700;
+const offsetTop = window.innerHeight - 430;
+const offsetLeft = window.innerWidth - 830;
 const cardWidth = 200;
 const cardHeight = 300;
 const gap = 40;
 const ease = "sine.inOut";
 
-offsetTop = height - 430;
-offsetLeft = width - 830;
+const initialCardScrollWidth = 400;
 
 const order = [0, 1, 2, 3, 4, 5];
+
+function step() {
+  return new Promise((resolve) => {
+    order.push(order.shift());
+    const [active, ...rest] = order;
+    const prv = rest[rest.length - 1];
+    gsap.set(getCard(prv), { zIndex: 10 });
+    gsap.set(getCard(active), { zIndex: 20 });
+    gsap.to(getCard(prv), { scale: 2, ease });
+
+    gsap.to(getCard(active), {
+      x: 0,
+      y: 0,
+      ease,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      borderRadius: 0,
+      onComplete: () => {
+        const xNew = offsetLeft + (rest.length - 1) * (cardWidth + gap);
+        gsap.set(getCard(prv), {
+          x: xNew,
+          y: offsetTop,
+          width: cardWidth,
+          height: cardHeight,
+          zIndex: 30,
+          borderRadius: 10,
+          scale: 1,
+        });
+
+        resolve();
+      },
+    });
+
+    rest.forEach((i, index) => {
+      if (i !== prv) {
+        const xNew = offsetLeft + index * (cardWidth + gap);
+        gsap.set(getCard(i), { zIndex: 30 });
+        gsap.to(getCard(i), {
+          x: xNew,
+          y: offsetTop,
+          width: cardWidth,
+          height: cardHeight,
+          ease,
+          delay: 0.1 * (index + 1),
+        });
+      }
+    });
+  });
+}
 
 async function init() {
   const cards = data
@@ -96,6 +145,8 @@ async function init() {
     )
     .join("");
   _("demo").innerHTML = cards;
+
+  gsap.set(".indicator", { x: -window.innerWidth });
 
   const [active, ...rest] = order;
 
@@ -108,7 +159,7 @@ async function init() {
 
   rest.forEach((i, index) => {
     gsap.set(getCard(i), {
-      x: offsetLeft + 400 + index * (cardWidth + gap),
+      x: offsetLeft + initialCardScrollWidth + index * (cardWidth + gap),
       y: offsetTop,
       width: cardWidth,
       height: cardHeight,
@@ -122,13 +173,21 @@ async function init() {
     gsap.to(getCard(i), {
       x: offsetLeft + index * (cardWidth + gap),
       zIndex: 30,
-      delay: 0.05 * index,
       ease,
       delay: startDelay,
     });
   });
 
-  await loop();
+  gsap.to(".cover", {
+    x: width + 400,
+    delay: 0.5,
+    ease,
+    onComplete: () => {
+      setTimeout(() => {
+        loop();
+      }, 500);
+    },
+  });
 }
 
 init();

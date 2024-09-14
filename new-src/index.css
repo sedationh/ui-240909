@@ -16,3 +16,18 @@
     background-size: cover;
     box-shadow: 6px 6px 10px 2px rgba(0, 0, 0, 0.6);
 }
+
+body {
+    max-width: 100vh;
+    overflow: hidden;
+}
+
+.cover {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fff;
+    z-index: 100;
+}
